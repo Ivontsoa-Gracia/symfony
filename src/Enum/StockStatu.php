@@ -2,6 +2,6 @@
 namespace App\Enum;
 
 enum StockStatu:string {
-    case Entree='Entree';
+    case ENTREE='ENTREE';
     case SORTIE='SORTIE';
 }

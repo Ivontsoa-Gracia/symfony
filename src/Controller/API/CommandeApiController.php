@@ -67,6 +67,22 @@ class CommandeApiController extends AbstractController
         ]);
     }
 
+    #[Route("/api/commandes/last-id", methods: ["GET"])]
+    public function getLastCommandeId(CommandeRepository $repository): JsonResponse
+    {
+        // Récupérer la dernière commande insérée (triée par ID décroissant)
+        $commande = $repository->findOneBy([], ['id' => 'DESC']);  // Trie les commandes par ID décroissant pour obtenir la dernière
+
+        if (!$commande) {
+            return $this->json(['message' => 'Aucune commande trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Retourner uniquement l'ID de la dernière commande
+        return $this->json(['idCommande' => $commande->getId()], Response::HTTP_OK);
+    }
+
+
+
     #[Route("/api/commandes/{id}", methods: ["PUT"])]
     public function edit(int $id,Request $request,CommandeRepository $repository,EntityManagerInterface $em,SerializerInterface $serializer): JsonResponse 
     {

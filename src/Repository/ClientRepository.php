@@ -42,29 +42,18 @@ class ClientRepository extends ServiceEntityRepository
     //     return $qb->getQuery();
     // }
 
-   /**
-    * @return Client[] Returns an array of Client objects
-    */
-   public function findByExampleField($value): array
-   {
-       return $this->createQueryBuilder('c')
-           ->andWhere('c.email = :val')
-           ->setParameter('val', $value)
-           ->orderBy('c.id', 'ASC')
-           ->setMaxResults(10)
-           ->getQuery()
-           ->getResult()
-       ;
-   }
-
-    public function findOneBySomeField($mail,$mot): ?Client
+    /**
+        * @return Client[] Returns an array of Client objects
+        */
+    public function findByExampleField($value): array
     {
         return $this->createQueryBuilder('c')
-            ->andWhere('c.email = :val, c.mdp= :mdp')
+            ->andWhere('c.email = :val')
             ->setParameter('val', $value)
-            ->setParameter('mdp', $mot)
+            ->orderBy('c.id', 'ASC')
+            ->setMaxResults(10)
             ->getQuery()
-            ->getOneOrNullResult()
+            ->getResult()
         ;
     }
 }

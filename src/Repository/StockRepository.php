@@ -2,13 +2,13 @@
 
 namespace App\Repository;
 
+use App\Entity\Ingredient;
 use App\Entity\Stock;
+use App\Enum\StockStatu;
+use App\Enum\DetailStatu;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<Stock>
- */
 class StockRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
@@ -16,28 +16,35 @@ class StockRepository extends ServiceEntityRepository
         parent::__construct($registry, Stock::class);
     }
 
-//    /**
-//     * @return Stock[] Returns an array of Stock objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('s.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function getRemainingStock(Ingredient $ingredient): int
+    {
+        $qb = $this->createQueryBuilder('s');
+        
+        $qb->select(
+            'SUM(CASE WHEN s.status = :entree THEN s.quantite ELSE 0 END) - SUM(CASE WHEN s.status = :sortie THEN s.quantite ELSE 0 END) AS remainingStock'
+        )
+        ->where('s.idIngredient = :ingredient')
+        ->setParameter('entree', StockStatu::ENTREE)
+        ->setParameter('sortie', StockStatu::SORTIE)
+        ->setParameter('ingredient', $ingredient);
 
-//    public function findOneBySomeField($value): ?Stock
-//    {
-//        return $this->createQueryBuilder('s')
-//            ->andWhere('s.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        $result = $qb->getQuery()->getSingleScalarResult();
+
+        return $result ? (int) $result : 0;
+    }
+
+    public function montantTotalVente(): float
+    {
+        $qb = $this->createQueryBuilder('dc')
+            ->select('SUM(dc.quantite * p.prixUnitaire) AS totalVente')
+            ->join('dc.idPlat', 'p')
+            ->where('dc.status = :status')
+            ->setParameter('status', DetailStatu::RECUPERER) // Ajuste ce statut si nécessaire
+            ->getQuery();
+
+        $result = $qb->getSingleScalarResult();
+        
+        return $result ? (float) $result : 0.0;
+    }
+
 }
