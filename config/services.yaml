@@ -33,7 +33,6 @@ services:
             $validator: '@Symfony\Component\Validator\Validator\ValidatorInterface'
             $userPasswordHasher: '@Symfony\Component\Security\Core\Encoder\UserPasswordHasherInterface'
             $em: '@Doctrine\ORM\EntityManagerInterface'
-            $jwtTokenManager: '@App\Service\JwtTokenManager'  # Ajouté ici une fois pour éviter la duplication
 
     # Service definition for JwtTokenManager
     App\Service\JwtTokenManager:

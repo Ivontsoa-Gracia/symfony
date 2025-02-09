@@ -1,5 +1,3 @@
-<?php
-
 namespace App\Controller\API;
 
 use App\Entity\Client;
@@ -16,18 +14,29 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Routing\Requirement\Requirement;
 use Symfony\Component\DependencyInjection\Attribute\Required;
-
 
 class ClientApiController extends AbstractController
 {
     private $jwtTokenManager;
+    private $serializer;
+    private $validator;
+    private $userPasswordHasher;
+    private $em;
 
-    #[Required]
-    public function setJwtTokenManager(JwtTokenManager $jwtTokenManager)
-    {
+    // Le constructeur avec injection des dépendances
+    public function __construct(
+        JwtTokenManager $jwtTokenManager,
+        SerializerInterface $serializer,
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $userPasswordHasher,
+        EntityManagerInterface $em
+    ) {
         $this->jwtTokenManager = $jwtTokenManager;
+        $this->serializer = $serializer;
+        $this->validator = $validator;
+        $this->userPasswordHasher = $userPasswordHasher;
+        $this->em = $em;
     }
 
     #[Route("/api/clients", methods: ["POST"])]
