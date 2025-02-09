@@ -1,5 +1,5 @@
-# Utiliser l'image PHP officielle
-FROM php:8.1-fpm
+# Utiliser une version PHP compatible (par exemple PHP 8.2)
+FROM php:8.2-fpm
 
 # Installer les dépendances requises pour Symfony
 RUN apt-get update && apt-get install -y \
@@ -27,7 +27,7 @@ COPY --chown=symfonyuser:symfonyuser . /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 
 # Exposer le port de l'application
-EXPOSE 8000
+EXPOSE 9000
 
 # Démarrer le serveur PHP intégré
 CMD ["php-fpm"]
