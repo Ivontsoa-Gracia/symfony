@@ -21,6 +21,7 @@ class IngredientApiController extends AbstractController
 
     private StockRepository $stockRepository;
 
+    // Utilise l'injection de dépendance pour StockRepository
     public function __construct(StockRepository $stockRepository)
     {
         $this->stockRepository = $stockRepository;
@@ -98,29 +99,33 @@ class IngredientApiController extends AbstractController
         return new Response(null, 204);
     }
 
-    #[Route("/api/ingredients", methods: ["GET"])]
-    public function listIngredientStock(
-        IngredientRepository $repository,
-        StockRepository $stockRepository
-    ): JsonResponse {
-        $ingredients = $repository->findAll();
-
-        if (empty($ingredients)) {
-            return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
-        }
-
-        $ingredientData = [];
-        foreach ($ingredients as $ingredient) {
-            $remainingStock = $stockRepository->getRemainingStock($ingredient);
-            $ingredientData[] = [
-                'id' => $ingredient->getId(),
-                'nomIngredient' => $ingredient->getNomIngredient(),
-                'image' => $ingredient->getImage(),
-                'remainingStock' => $remainingStock,
-            ];
-        }
-
-        return $this->json($ingredientData, Response::HTTP_OK);
-    }
+     // Méthode pour récupérer la liste des ingrédients et leur stock restant
+     #[Route("/api/ingredients", methods: ["GET"])]
+     public function listIngredientStock(IngredientRepository $repository): JsonResponse
+     {
+         // Récupérer tous les ingrédients
+         $ingredients = $repository->findAll();
+ 
+         // Si aucun ingrédient n'est trouvé, retourner un message d'erreur
+         if (empty($ingredients)) {
+             return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
+         }
+ 
+         // Tableau pour stocker les données des ingrédients et leur stock restant
+         $ingredientData = [];
+         foreach ($ingredients as $ingredient) {
+             // Récupérer le stock restant pour chaque ingrédient
+             $remainingStock = $this->stockRepository->getRemainingStock($ingredient);
+             $ingredientData[] = [
+                 'id' => $ingredient->getId(),
+                 'nomIngredient' => $ingredient->getNomIngredient(),
+                 'image' => $ingredient->getImage(),
+                 'remainingStock' => $remainingStock,
+             ];
+         }
+ 
+         // Retourner les données sous format JSON
+         return $this->json($ingredientData, Response::HTTP_OK);
+     }
 }
 
