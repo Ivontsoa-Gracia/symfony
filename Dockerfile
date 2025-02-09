@@ -27,7 +27,7 @@ COPY --chown=symfonyuser:symfonyuser . /var/www/html
 RUN composer install --no-dev --optimize-autoloader
 
 # Exposer le port de l'application
-EXPOSE 9000
+EXPOSE 8000
 
 # Démarrer le serveur PHP intégré
 CMD ["php-fpm"]
