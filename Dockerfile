@@ -1,33 +1,36 @@
-# Utiliser une version PHP compatible (par exemple PHP 8.2)
-FROM php:8.2-fpm
+FROM php:8.2-cli
 
-# Installer les dépendances requises pour Symfony
+# Install required system dependencies
 RUN apt-get update && apt-get install -y \
+    unzip \
+    git \
+    libzip-dev \
+    libpq-dev \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    zlib1g-dev \
-    git \
-    unzip \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install zip pdo pdo_mysql pdo_pgsql
 
-# Installer Composer
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Créer un utilisateur non-root et changer les permissions
-RUN useradd -ms /bin/bash symfonyuser
-USER symfonyuser
-WORKDIR /var/www/html
+# Set working directory
+WORKDIR /app
 
-# Copier les fichiers du projet dans le conteneur
-COPY --chown=symfonyuser:symfonyuser . /var/www/html
+# Copy application files
+COPY . /app/.
 
-# Installer les dépendances de Symfony avec Composer
+# Ensure necessary directories exist
+RUN mkdir -p /var/log/nginx && mkdir -p /var/cache/nginx
+
+# Install production dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Exposer le port de l'application
+# Clear Symfony cache
+RUN php bin/console cache:clear --no-warmup --env=prod
+
+# Expose the application's port
 EXPOSE 8000
 
-# Démarrer le serveur PHP intégré
-CMD ["php-fpm"]
+# Start the Symfony server (for development, consider using Nginx/Apache in production)
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]
