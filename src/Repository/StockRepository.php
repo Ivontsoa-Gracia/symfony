@@ -23,10 +23,10 @@ class StockRepository extends ServiceEntityRepository
         $qb->select(
             'SUM(CASE WHEN s.status = :entree THEN s.quantite ELSE 0 END) - SUM(CASE WHEN s.status = :sortie THEN s.quantite ELSE 0 END) AS remainingStock'
         )
-        ->where('s.idIngredient = :ingredient')
+        ->where('s.idIngredient = :ingredientId')        
         ->setParameter('entree', StockStatu::ENTREE)
         ->setParameter('sortie', StockStatu::SORTIE)
-        ->setParameter('ingredient', $ingredient);
+        ->setParameter('ingredientId', $ingredient->getId());
 
         $result = $qb->getQuery()->getSingleScalarResult();
 

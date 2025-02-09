@@ -4,6 +4,7 @@ namespace App\Controller\API;
 
 use App\Entity\Ingredient;
 use App\Repository\IngredientRepository;
+use App\Repository\StockRepository;
 use App\Service\DeleteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,6 +18,14 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class IngredientApiController extends AbstractController
 {
+
+    private StockRepository $stockRepository;
+
+    public function __construct(StockRepository $stockRepository)
+    {
+        $this->stockRepository = $stockRepository;
+    }
+
     #[Route("/api/ingredients", methods: ["POST"])]
     public function create(Request $request, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
