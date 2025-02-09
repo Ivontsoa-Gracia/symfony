@@ -100,32 +100,30 @@ class IngredientApiController extends AbstractController
     }
 
      // Méthode pour récupérer la liste des ingrédients et leur stock restant
-     #[Route("/api/ingredients", methods: ["GET"])]
-     public function listIngredientStock(IngredientRepository $repository): JsonResponse
-     {
-         // Récupérer tous les ingrédients
-         $ingredients = $repository->findAll();
- 
-         // Si aucun ingrédient n'est trouvé, retourner un message d'erreur
-         if (empty($ingredients)) {
-             return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
-         }
- 
-         // Tableau pour stocker les données des ingrédients et leur stock restant
-         $ingredientData = [];
-         foreach ($ingredients as $ingredient) {
-             // Récupérer le stock restant pour chaque ingrédient
-             $remainingStock = $this->stockRepository->getRemainingStock($ingredient);
-             $ingredientData[] = [
-                 'id' => $ingredient->getId(),
-                 'nomIngredient' => $ingredient->getNomIngredient(),
-                 'image' => $ingredient->getImage(),
-                 'remainingStock' => $remainingStock,
-             ];
-         }
- 
-         // Retourner les données sous format JSON
-         return $this->json($ingredientData, Response::HTTP_OK);
-     }
+    // IngredientApiController.php
+    #[Route("/api/ingredients", methods: ["GET"])]
+    public function listIngredientStock(IngredientRepository $repository): JsonResponse
+    {
+        $ingredients = $repository->findAll();
+
+        if (empty($ingredients)) {
+            return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        $ingredientData = [];
+        foreach ($ingredients as $ingredient) {
+            // Utilisation de la méthode findById au lieu de getRemainingStock
+            $remainingStock = $this->stockRepository->findByIngredientId($ingredient);
+            $ingredientData[] = [
+                'id' => $ingredient->getId(),
+                'nomIngredient' => $ingredient->getNomIngredient(),
+                'image' => $ingredient->getImage(),
+                'remainingStock' => $remainingStock,
+            ];
+        }
+
+        return $this->json($ingredientData, Response::HTTP_OK);
+    }
+
 }
 

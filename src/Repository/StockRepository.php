@@ -16,7 +16,8 @@ class StockRepository extends ServiceEntityRepository
         parent::__construct($registry, Stock::class);
     }
 
-    public function getRemainingStock(Ingredient $ingredient): int
+    // StockRepository.php
+    public function findByIngredientId(Ingredient $ingredient): int
     {
         $qb = $this->createQueryBuilder('s');
         
@@ -32,6 +33,7 @@ class StockRepository extends ServiceEntityRepository
 
         return $result ? (int) $result : 0;
     }
+
 
     public function montantTotalVente(): float
     {
