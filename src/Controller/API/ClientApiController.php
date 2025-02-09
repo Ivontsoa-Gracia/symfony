@@ -1,3 +1,5 @@
+<?php
+
 namespace App\Controller\API;
 
 use App\Entity\Client;
@@ -177,3 +179,5 @@ class ClientApiController extends AbstractController
         return new JsonResponse(['token' => $client->getApiToken()]);
     }
 }
+
+?>
