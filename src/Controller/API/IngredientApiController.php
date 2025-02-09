@@ -117,7 +117,7 @@ class IngredientApiController extends AbstractController
                 'id' => $ingredient->getId(),
                 'nomIngredient' => $ingredient->getNomIngredient(),
                 'image' => $ingredient->getImage(),
-                'remainingStock' => $remainingStock,
+                // 'remainingStock' => $remainingStock,
             ];
         }
 
