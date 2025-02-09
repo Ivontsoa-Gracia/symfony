@@ -33,11 +33,16 @@ class ClientApiController extends AbstractController
     #[Route("/api/clients", methods: ["POST"])]
     public function create(
         Request $request,
-        SerializerInterface $serializer,  // Assurez-vous que le service est injecté ici
+        SerializerInterface $serializer = null,  // rendre l'argument nullable
         ValidatorInterface $validator,
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $em
     ): JsonResponse {
+        if (!$serializer) {
+            // Si le serializer n'est pas injecté, lancer une exception explicite
+            throw new RuntimeException('Le service SerializerInterface n\'a pas pu être injecté.');
+        }
+    
         // Décoder la requête JSON en objet Client
         $client = $serializer->deserialize($request->getContent(), Client::class, 'json');
     
@@ -62,6 +67,7 @@ class ClientApiController extends AbstractController
         // Retourner la réponse
         return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
+    
     
     #[Route("/api/clients/findByEmail", methods: "POST")]
     public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse

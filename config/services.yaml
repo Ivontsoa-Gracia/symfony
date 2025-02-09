@@ -26,21 +26,19 @@ services:
         arguments:
             - [ '@Symfony\Component\Serializer\Normalizer\ObjectNormalizer' ]
 
-    # Explicit service definition for ClientApiController
+    # Service definition for ClientApiController
     App\Controller\API\ClientApiController:
         arguments:
-            $jwtTokenManager: '@App\Service\JwtTokenManager'
+            $serializer: '@Symfony\Component\Serializer\SerializerInterface'
+            $validator: '@Symfony\Component\Validator\Validator\ValidatorInterface'
+            $userPasswordHasher: '@Symfony\Component\Security\Core\Encoder\UserPasswordHasherInterface'
+            $em: '@Doctrine\ORM\EntityManagerInterface'
+            $jwtTokenManager: '@App\Service\JwtTokenManager'  # Ajouté ici une fois pour éviter la duplication
 
     # Service definition for JwtTokenManager
     App\Service\JwtTokenManager:
         arguments:
-            # Ajoutez ici les dépendances nécessaires pour JwtTokenManager
             $someDependency: '@some_service' # Remplacez 'some_service' par le service réel dont vous avez besoin
 
-    # Ajoutez explicitement le service SerializerInterface si nécessaire
+    # Assurez-vous que le service Serializer est injecté correctement
     Symfony\Component\Serializer\SerializerInterface: '@Symfony\Component\Serializer\Serializer'
-
-    # Vos autres services
-    App\Controller\API\ClientApiController:
-        arguments:
-            $serializer: '@Symfony\Component\Serializer\SerializerInterface'
