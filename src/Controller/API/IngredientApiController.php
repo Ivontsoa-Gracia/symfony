@@ -101,28 +101,28 @@ class IngredientApiController extends AbstractController
 
      // Méthode pour récupérer la liste des ingrédients et leur stock restant
     // IngredientApiController.php
-    #[Route("/api/ingredients", methods: ["GET"])]
-    public function listIngredientStock(IngredientRepository $repository): JsonResponse
-    {
-        $ingredients = $repository->findAll();
+    // #[Route("/api/ingredients", methods: ["GET"])]
+    // public function listIngredientStock(IngredientRepository $repository): JsonResponse
+    // {
+    //     $ingredients = $repository->findAll();
 
-        if (empty($ingredients)) {
-            return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
-        }
+    //     if (empty($ingredients)) {
+    //         return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
+    //     }
 
-        $ingredientData = [];
-        foreach ($ingredients as $ingredient) {
-            // $remainingStock = $this->stockRepository->findByIngredientId($ingredient);
-            $ingredientData[] = [
-                'id' => $ingredient->getId(),
-                'nomIngredient' => $ingredient->getNomIngredient(),
-                'image' => $ingredient->getImage(),
-                // 'remainingStock' => $remainingStock,
-            ];
-        }
+    //     $ingredientData = [];
+    //     foreach ($ingredients as $ingredient) {
+    //         // $remainingStock = $this->stockRepository->findByIngredientId($ingredient);
+    //         $ingredientData[] = [
+    //             'id' => $ingredient->getId(),
+    //             'nomIngredient' => $ingredient->getNomIngredient(),
+    //             'image' => $ingredient->getImage(),
+    //             // 'remainingStock' => $remainingStock,
+    //         ];
+    //     }
 
-        return $this->json($ingredientData, Response::HTTP_OK);
-    }
+    //     return $this->json($ingredientData, Response::HTTP_OK);
+    // }
 
 }
 
