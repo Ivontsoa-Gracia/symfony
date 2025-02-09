@@ -6,45 +6,50 @@ use App\Entity\IngredientPlat;
 use App\Entity\Plat;
 use App\Entity\Ingredient;
 use App\Repository\IngredientPlatRepository;
+use App\Service\DeleteService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class IngredientsPlatApiController extends AbstractController
 {
-    #[Route("/api/ingredientplat", methods: ["POST"])]
-    public function create(Request $request, EntityManagerInterface $em): JsonResponse
+   #[Route("/api/ingredientplat", methods: ["POST"])]
+    public function create(Request $request, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse
     {
-        // Décodage manuel du JSON
         $data = json_decode($request->getContent(), true);
 
-        // Vérifier que les données attendues existent
+        //Vérifier si les IDs sont présents dans la requête
         if (!isset($data['plat']) || !isset($data['ingredient'])) {
-            return new JsonResponse(['error' => 'Payload invalide'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['message' => 'Plat ou ingrédient ID manquant'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Récupération du plat existant à partir de l'ID fourni
+        // Récupérer les entités Plat et Ingredient par leurs IDs
         $plat = $em->getRepository(Plat::class)->find($data['plat']);
-        if (!$plat) {
-            return new JsonResponse(['error' => 'Plat introuvable'], Response::HTTP_BAD_REQUEST);
-        }
-
-        // Récupération de l'ingrédient existant à partir de l'ID fourni
         $ingredient = $em->getRepository(Ingredient::class)->find($data['ingredient']);
-        if (!$ingredient) {
-            return new JsonResponse(['error' => 'Ingredient introuvable'], Response::HTTP_BAD_REQUEST);
+
+        if (!$plat || !$ingredient) {
+            return $this->json(['message' => 'Plat ou ingrédient non trouvé'], Response::HTTP_BAD_REQUEST);
         }
 
-        // Création et configuration de l'objet IngredientPlat
-        $ingredientplat = new IngredientPlat();
+        // Désérialisation de l'objet IngredientPlat (sans les relations)
+        $ingredientplat = $serializer->deserialize(
+            $request->getContent(),
+            IngredientPlat::class,
+            'json',
+            ['object_to_populate' => new IngredientPlat()]
+        );
+
+        // Associer les entités Plat et Ingredient à IngredientPlat
         $ingredientplat->setPlat($plat);
         $ingredientplat->setIngredient($ingredient);
 
+        // Persister et sauvegarder
         $em->persist($ingredientplat);
         $em->flush();
 
@@ -67,45 +72,27 @@ class IngredientsPlatApiController extends AbstractController
         ]);
     }
 
-
-    // #[Route("/api/ingredientplat/{id}", methods: ["GET"])]
-    // public function infoIngredientPlat(int $id,IngredientPlatRepository $repository, SerializerInterface $serializer): JsonResponse
-    // {
-    //     $ingredientDetail = $repository->find($id);
-
-    //     return $this->json($ingredientDetail,200,[],[
-    //         'groups' => ['ingredientPlat.show']]);
-    // }
-
-
-    #[Route("/api/ingredientplat/{id}", methods: ["PUT"])]
-    public function edit(int $id, Request $request, IngredientPlatRepository $repository, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse 
+    #[Route("/api/ingredientPlat/{id}", methods: ["PUT"])]
+    public function edit(int $id,Request $request,IngredientPlatRepository $repository,EntityManagerInterface $em,SerializerInterface $serializer): JsonResponse 
     {
         $ingredientPlat = $repository->find($id);
-        if (!$ingredientPlat) {
-            throw new NotFoundHttpException('IngredientPlat non trouvé');
+        if (!$ingredient) {
+            throw new NotFoundHttpException('Plat non trouvé');
         }
 
-        // Exemple de mise à jour : on peut modifier le plat et/ou l'ingrédient
-        $data = json_decode($request->getContent(), true);
-        if (isset($data['plat'])) {
-            $plat = $em->getRepository(Plat::class)->find($data['plat']);
-            if ($plat) {
-                $ingredientPlat->setPlat($plat);
-            }
-        }
-        if (isset($data['ingredient'])) {
-            $ingredient = $em->getRepository(Ingredient::class)->find($data['ingredient']);
-            if ($ingredient) {
-                $ingredientPlat->setIngredient($ingredient);
-            }
-        }
+        $serializer->deserialize(
+            $request->getContent(),
+            Plat::class,
+            'json',
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $ingredient]
+        );
 
-        $em->persist($ingredientPlat);
+        $em->persist($ingredient);
         $em->flush();
 
-        return $this->json($ingredientPlat, Response::HTTP_OK, [], [
-            'groups' => ['ingredientPlat.show']
+        return $this->json($ingredient, Response::HTTP_OK, [], [
+            'groups' => ['ingredient.show']
         ]);
     }
+
 }

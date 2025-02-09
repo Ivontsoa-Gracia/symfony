@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Annotation\Groups;
+
 use App\Enum\StockStatu;
 
 #[ORM\Entity(repositoryClass: StockRepository::class)]
@@ -16,31 +16,19 @@ class Stock
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['stock.create', 'stock.list', 'task.show'])]
     private ?int $id = null;
 
     #[ORM\Column]
-    #[Groups(['stock.create', 'stock.list', 'task.show'])]
     private ?int $quantite = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['stock.create'])]
     private ?\DateTimeInterface $dateMouvement = null;
 
     #[ORM\ManyToOne(inversedBy: 'stockId')]
-    #[Groups(['stock.create', 'stock.list', 'task.show'])]
     private ?Ingredient $idIngredient = null;
 
     #[ORM\Column(type: 'string', enumType: StockStatu::class)]
-    #[Groups(['stock.create', 'stock.list', 'task.show'])]
     private ?StockStatu $status = null;
-
-    public function __construct()
-    {
-        $this->status = StockStatu::ENTREE;
-    }
-
-    // Getters et setters
 
     public function getId(): ?int
     {
@@ -52,9 +40,10 @@ class Stock
         return $this->quantite;
     }
 
-    public function setQuantite(int $quantite): self
+    public function setQuantite(int $quantite): static
     {
         $this->quantite = $quantite;
+
         return $this;
     }
 
@@ -63,9 +52,10 @@ class Stock
         return $this->dateMouvement;
     }
 
-    public function setDateMouvement(\DateTimeInterface $dateMouvement): self
+    public function setDateMouvement(\DateTimeInterface $dateMouvement): static
     {
         $this->dateMouvement = $dateMouvement;
+
         return $this;
     }
 
@@ -74,9 +64,10 @@ class Stock
         return $this->idIngredient;
     }
 
-    public function setIdIngredient(?Ingredient $idIngredient): self
+    public function setIdIngredient(?Ingredient $idIngredient): static
     {
         $this->idIngredient = $idIngredient;
+
         return $this;
     }
 
@@ -85,7 +76,7 @@ class Stock
         return $this->status;
     }
 
-    public function setStatus(StockStatu $status): self
+    public function setStatus(StockStatu $status): static
     {
         $this->status = $status;
         return $this;

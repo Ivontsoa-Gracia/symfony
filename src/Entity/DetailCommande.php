@@ -13,7 +13,7 @@ class DetailCommande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['detailcommande.create' , 'detailcommande.show', 'detailcommande.list'])]
+    #[Groups(['detailcommande.create' , 'detailcommande.show'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'detail' , cascade: ['persist'])]

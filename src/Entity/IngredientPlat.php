@@ -16,12 +16,12 @@ class IngredientPlat
     #[Groups(['ingredientPlat.list', 'ingredientPlat.show', 'ingredientPlat.update'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Plat::class, inversedBy: 'ingredientPlats')]
+    #[ORM\ManyToOne(targetEntity: Plat::class, inversedBy: 'ingredientPlats', cascade: ['persist'])]
     #[Assert\NotNull(groups: ['create', 'update'])]
     #[Groups(['ingredientPlat.list', 'ingredientPlat.show', 'ingredientPlat.update'])]
     private ?Plat $plat = null;
 
-    #[ORM\ManyToOne(targetEntity: Ingredient::class, inversedBy: 'ingredientPlats')]
+    #[ORM\ManyToOne(targetEntity: Ingredient::class, inversedBy: 'ingredientPlats', cascade: ['persist'])]
     #[Assert\NotNull(groups: ['create', 'update'])]
     #[Groups(['ingredientPlat.list', 'ingredientPlat.show', 'ingredientPlat.update'])]
     private ?Ingredient $ingredient = null;
