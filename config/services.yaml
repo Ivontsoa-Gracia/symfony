@@ -25,6 +25,8 @@ services:
     Symfony\Component\Serializer\Serializer:
         arguments:
             - [ '@Symfony\Component\Serializer\Normalizer\ObjectNormalizer' ]
+    
+    App\Service\JwtTokenManager: ~
 
 
     # add more service definitions when explicit configuration is needed
