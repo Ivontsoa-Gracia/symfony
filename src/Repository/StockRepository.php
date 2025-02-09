@@ -16,23 +16,23 @@ class StockRepository extends ServiceEntityRepository
         parent::__construct($registry, Stock::class);
     }
 
-    // StockRepository.php
-    public function findByIngredientId(Ingredient $ingredient): int
+    public function findByIngredientId($ingredient)
     {
         $qb = $this->createQueryBuilder('s');
-        
+    
         $qb->select(
             'SUM(CASE WHEN s.status = :entree THEN s.quantite ELSE 0 END) - SUM(CASE WHEN s.status = :sortie THEN s.quantite ELSE 0 END) AS remainingStock'
         )
-        ->where('s.idIngredient = :ingredientId')        
+        ->where('s.idIngredient = :ingredientId')
         ->setParameter('entree', StockStatu::ENTREE)
         ->setParameter('sortie', StockStatu::SORTIE)
         ->setParameter('ingredientId', $ingredient->getId());
-
+    
         $result = $qb->getQuery()->getSingleScalarResult();
-
+    
         return $result ? (int) $result : 0;
     }
+    
 
 
     public function montantTotalVente(): float
