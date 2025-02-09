@@ -20,15 +20,12 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['client.list', 'client.show', 'client.update' , 'client.create' , 'commande.list' , 'detailCommande.list'])]
+    #[Groups(['client.list', 'client.show', 'client.update' , 'client.create' , 'commande.list' , 'detailcommande.list'])]
     private ?string $email = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['client.create'])]
     private ?string $password = null; 
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $apiToken = null;
 
     /**
      * @var Collection<int, Commande>
@@ -68,18 +65,6 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static  
     {
         $this->password = $password;
-        return $this;
-    }
-
-    public function getApiToken(): ?string
-    {
-        return $this->apiToken;
-    }
-
-    public function setApiToken(?string $apiToken): static
-    {
-        $this->apiToken = $apiToken;
-
         return $this;
     }
 

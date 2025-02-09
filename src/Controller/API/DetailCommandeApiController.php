@@ -67,6 +67,8 @@ class DetailCommandeApiController extends AbstractController
         ]);
     }
 
+
+    
     #[Route("/api/detailCommandeEdit/{id}", methods: ["PUT"])]
     public function edit(int $id,Request $request,DetailCommandeRepository $repository,EntityManagerInterface $em,SerializerInterface $serializer): JsonResponse 
     {

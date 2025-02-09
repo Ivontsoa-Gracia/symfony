@@ -32,4 +32,17 @@ class DeleteService
         $this->entityManager->remove($entity);
         $this->entityManager->flush();
     }
+
+    // public function hardDelete(DeletableEntityInterface $entity): void
+    // {
+    //     // Si l'entité possède une méthode pour obtenir ses entités enfants, on peut les supprimer manuellement.
+    //     if (method_exists($entity, 'getChildren')) {
+    //         foreach ($entity->getChildren() as $child) {
+    //             $this->entityManager->remove($child);
+    //         }
+    //     }
+    //     $this->entityManager->remove($entity);
+    //     $this->entityManager->flush();
+    // }
+
 }
