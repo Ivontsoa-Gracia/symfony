@@ -3,8 +3,11 @@
 namespace App\Controller\API;
 
 use App\Entity\Ingredient;
+
 use App\Repository\IngredientRepository;
 use App\Repository\StockRepository;
+
+
 use App\Service\FileUploadService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,7 +21,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class IngredientApiController extends AbstractController
 {
-    // Route pour créer un nouvel ingrédient
     #[Route("/api/ingredients", methods: ["POST"])]
     public function create(
         Request $request,
@@ -51,7 +53,7 @@ class IngredientApiController extends AbstractController
         ]);
     }
 
-    // Route pour lister tous les ingrédients
+
     #[Route("/api/ingredients/list", methods: ["GET"])]
     public function list(IngredientRepository $repository): JsonResponse
     {
@@ -66,7 +68,6 @@ class IngredientApiController extends AbstractController
         ]);
     }
 
-    // Route pour obtenir les ingrédients avec leur stock restant
     #[Route("/api/ingredients", methods: ["GET"])]
     public function listIngredientStock(
         IngredientRepository $repository,
@@ -92,7 +93,7 @@ class IngredientApiController extends AbstractController
         return $this->json($ingredientData, Response::HTTP_OK);
     }
 
-    // Route pour éditer un ingrédient
+
     #[Route("/api/ingredients/{id}", methods: ["PUT"])]
     public function edit(
         int $id,
@@ -136,7 +137,6 @@ class IngredientApiController extends AbstractController
         ]);
     }
 
-    // Route pour supprimer un ingrédient
     #[Route("/api/ingredients/{id}", methods: ["DELETE"])]
     public function delete(
         int $id,
@@ -161,5 +161,3 @@ class IngredientApiController extends AbstractController
         return new Response(null, Response::HTTP_NO_CONTENT);
     }
 }
-
-?>
