@@ -2,153 +2,128 @@
 
 namespace App\Controller\API;
 
-use App\Entity\Ingredient;
-
-use App\Repository\IngredientRepository;
-use App\Repository\StockRepository;
-use App\Service\FileUploadService;
-use App\Service\DeleteService;
+use App\Entity\Client;
+use App\Repository\ClientRepository;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Routing\Requirement\Requirement;
+
 
 class ClientApiController extends AbstractController
 {
-    #[Route("/api/ingredients", methods: ["POST"])]
-    public function create(
-        Request $request,
-        EntityManagerInterface $em,
-        FileUploadService $fileUploadService
-    ): JsonResponse {
-        $ingredient = new Ingredient();
 
-        // Récupération des données textuelles
-        $nomIngredient = $request->request->get('nomIngredient');
-        if ($nomIngredient) {
-            $ingredient->setNomIngredient($nomIngredient);
-        } else {
-            return $this->json(['detail' => 'Le champ nomIngredient est requis'], Response::HTTP_BAD_REQUEST);
+    #[Route("/api/clients", methods: ["POST"])]
+    #[TokenRequired]
+    public function create(Request $request, SerializerInterface $serializer, ValidatorInterface $validator, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $em): JsonResponse 
+    {
+        // Décoder la requête JSON en objet Client
+        $client = $serializer->deserialize($request->getContent(), Client::class, 'json');
+
+        // Valider l'entité
+        $errors = $validator->validate($client);
+        if (count($errors) > 0) {
+            return new JsonResponse(['error' => (string) $errors], 400);
         }
 
-        // Gestion du fichier image
-        $file = $request->files->get('image');
-        if ($file) {
-            $filename = $fileUploadService->upload($file);
-            $ingredient->setImage($filename);
+        // Vérifier que le mot de passe est présent
+        if (!$client->getPassword()) {
+            return new JsonResponse(['error' => 'Mot de passe requis'], 400);
         }
 
-        // Sauvegarde de l'ingrédient en base de données
-        $em->persist($ingredient);
+        // Hacher le mot de passe
+        $client->setPassword($userPasswordHasher->hashPassword($client, $client->getPassword()));
+
+        // Sauvegarder en base de données
+        $em->persist($client);
         $em->flush();
 
-        return $this->json($ingredient, Response::HTTP_CREATED, [], [
-            'groups' => ['ingredient.show']
-        ]);
+        // Retourner la réponse
+        return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
 
-
-    #[Route("/api/ingredients/list", methods: ["GET"])]
-    public function list(IngredientRepository $repository): JsonResponse
+    #[Route("/api/clients/{id}", methods: "GET", requirements: ['id' => Requirement::DIGITS])]
+    #[TokenRequired]
+    public function findById(Client $client)
     {
-        $ingredientlist = $repository->findAll();
-
-        if (empty($ingredientlist)) {
-            return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
-        }
-
-        return $this->json($ingredientlist, Response::HTTP_OK, [], [
-            'groups' => ['ingredient.list']
+        return $this->json($client, 200, [], [
+            'groups' => ['client.show']
         ]);
     }
 
-    #[Route("/api/ingredients", methods: ["GET"])]
-    public function listIngredientStock(
-        IngredientRepository $repository,
-        StockRepository $stockRepository
-    ): JsonResponse {
-        $ingredients = $repository->findAll();
 
-        if (empty($ingredients)) {
-            return $this->json(['message' => 'Aucun ingrédient trouvé'], Response::HTTP_NOT_FOUND);
+    #[Route("/api/clients/{id}", methods: "PUT")]
+    #[TokenRequired]
+    public function update(int $id, Request $request, ClientRepository $repository, EntityManagerInterface $em, SerializerInterface $serializer): JsonResponse 
+    {
+        // Récupérer le client existant
+        $client = $repository->find($id);
+        if (!$client) {
+            throw new NotFoundHttpException('Client non trouvé');
         }
 
-        $ingredientData = [];
-        foreach ($ingredients as $ingredient) {
-            $remainingStock = $stockRepository->getRemainingStock($ingredient);
-            $ingredientData[] = [
-                'id' => $ingredient->getId(),
-                'nomIngredient' => $ingredient->getNomIngredient(),
-                'image' => $ingredient->getImage(),
-                'remainingStock' => $remainingStock,
-            ];
-        }
-
-        return $this->json($ingredientData, Response::HTTP_OK);
-    }
-
-
-    #[Route("/api/ingredients/{id}", methods: ["PUT"])]
-    public function edit(
-        int $id,
-        Request $request,
-        IngredientRepository $repository,
-        EntityManagerInterface $em,
-        SerializerInterface $serializer,
-        FileUploadService $fileUploadService
-    ): JsonResponse {
-        $ingredient = $repository->find($id);
-        if (!$ingredient) {
-            throw new NotFoundHttpException('Ingrédient non trouvé');
-        }
-
-        // Désérialisation et mise à jour de l'objet
-        $serializer->deserialize(
+        // Désérialisation partielle
+        $updatedClient = $serializer->deserialize(
             $request->getContent(),
-            Ingredient::class,
+            Client::class,
             'json',
-            [AbstractNormalizer::OBJECT_TO_POPULATE => $ingredient]
+            [AbstractNormalizer::OBJECT_TO_POPULATE => $client, 'groups' => ['client.update']]
         );
 
-        // Vérification et gestion du fichier image si une nouvelle image est fournie
-        $file = $request->files->get('image');
-        if ($file) {
-            // Suppression de l'ancienne image
-            if ($ingredient->getImage()) {
-                $fileUploadService->delete($ingredient->getImage());
-            }
-
-            // Upload de la nouvelle image
-            $filename = $fileUploadService->upload($file);
-            $ingredient->setImage($filename);
+        // Si un nouveau mot de passe est fourni, le hacher
+        if ($updatedClient->getPassword()) {
+            $updatedClient->setPassword($userPasswordHasher->hashPassword($updatedClient, $updatedClient->getPassword()));
         }
 
-        $em->persist($ingredient);
+        // Sauvegarder les modifications
+        $em->persist($updatedClient);
         $em->flush();
 
-        return $this->json($ingredient, Response::HTTP_OK, [], [
-            'groups' => ['ingredient.show']
-        ]);
+        return $this->json($updatedClient, 200, [], ['groups' => ['client.show']]);
     }
 
-    #[Route("/api/ingredient/{id}", methods: ["DELETE"])]
-    public function delete(int $id,DeleteService $deleteService,IngredientRepository $repository)
+    #[Route("/api/clients/{id}", methods: "DELETE")]
+    #[TokenRequired]
+    public function delete(int $id, DeleteService $deleteService, ClientRepository $repository): Response 
     {
-        // Récupérer l'ingredient existant
-        $ingredient = $repository->find($id);
-        if (!$ingredient) {
-            throw new NotFoundHttpException('Ingredient non trouvé');
+        $client = $repository->find($id);
+        if (!$client) {
+            throw new NotFoundHttpException('Client non trouvé');
         }
 
-        // Delete ingredient
-        // $deleteService->hardDelete($ingredient);
+        $deleteService->softDelete($client);
 
-        // Return no content code
         return new Response(null, 204);
     }
+
+
+    #[Route("/api/clients/find-by-email", methods: "POST")]
+    public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+
+        // Appel à la méthode du ClientRepository pour trouver le client par email
+        $clients = $clientRepository->findByExampleField($email);
+
+        // Vérification si le client existe
+        if (empty($clients)) {
+            return new JsonResponse(['message' => 'Client non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Supposons que le premier résultat est le client recherché
+        $client = $clients[0];
+
+        return new JsonResponse(['id' => $client->getId()], Response::HTTP_OK);
+    }
+
+
 }
