@@ -112,7 +112,7 @@ class IngredientApiController extends AbstractController
 
         $ingredientData = [];
         foreach ($ingredients as $ingredient) {
-            $remainingStock = $this->stockRepository->findByIngredientId($ingredient);
+            // $remainingStock = $this->stockRepository->findByIngredientId($ingredient);
             $ingredientData[] = [
                 'id' => $ingredient->getId(),
                 'nomIngredient' => $ingredient->getNomIngredient(),
