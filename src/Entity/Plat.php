@@ -15,19 +15,19 @@ class Plat
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['plats.create','plats.list', 'plats.show','detailcommande.list'])]
+    #[Groups(['plats.create','plats.list', 'plats.show'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['plats.list', 'plats.show', 'plats.update', 'plats.create','ingredientPlat.show','ingredientPlat.list','detailcommande.list'])]
+    #[Groups(['plats.list', 'plats.show', 'plats.update', 'plats.create','ingredientPlat.show','ingredientPlat.list', 'detailcommande.list'])]
     private ?string $nomPlat = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups(['plats.list', 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list','detailcommande.list'])]
+    #[Groups(['plats.list', 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list', 'detailcommande.list'])]
     private ?string $prixUnitaire = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE)]
-    #[Groups(['plats.list' , 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list'])]
+    #[Groups(['plats.list' , 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list', 'detailcommande.list'])]
     private ?\DateTimeInterface $tempsCuisson = null;
 
     /**
@@ -43,7 +43,7 @@ class Plat
     private Collection $detailCommande;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['plats.list' , 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list'])]
+    #[Groups(['plats.list' , 'plats.show', 'plats.update', 'plats.create','ingredientPlat.list', 'detailcommande.list'])]
 
     private ?string $image = null;
 

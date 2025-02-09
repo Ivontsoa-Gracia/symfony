@@ -9,8 +9,6 @@ use App\Repository\StockRepository;
 
 
 use App\Service\FileUploadService;
-use App\Service\DeleteService;
-
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -139,19 +137,27 @@ class IngredientApiController extends AbstractController
         ]);
     }
 
-    #[Route("/api/ingredient/{id}", methods: ["DELETE"])]
-    public function delete(int $id,DeleteService $deleteService,IngredientRepository $repository)
-    {
-        // Récupérer l'ingredient existant
+    #[Route("/api/ingredients/{id}", methods: ["DELETE"])]
+    public function delete(
+        int $id,
+        IngredientRepository $repository,
+        EntityManagerInterface $em,
+        FileUploadService $fileUploadService
+    ): Response {
         $ingredient = $repository->find($id);
         if (!$ingredient) {
-            throw new NotFoundHttpException('Ingredient non trouvé');
+            throw new NotFoundHttpException('Ingrédient non trouvé');
         }
 
-        // Delete ingredient
-        // $deleteService->hardDelete($ingredient);
+        // Suppression du fichier image si existant
+        if ($ingredient->getImage()) {
+            $fileUploadService->delete($ingredient->getImage());
+        }
 
-        // Return no content code
-        return new Response(null, 204);
+        // Suppression de l'ingrédient
+        $em->remove($ingredient);
+        $em->flush();
+
+        return new Response(null, Response::HTTP_NO_CONTENT);
     }
 }

@@ -13,20 +13,19 @@ class DetailCommande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['detailcommande.create', 'detailcommande.show'])]
+    #[Groups(['detailcommande.create' , 'detailcommande.show', 'detailcommande.list'])]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'detail', cascade: ['persist'])]
-    #[Groups(['detailcommande.create', 'detailcommande.show', 'detailcommande.list'])]
+    #[ORM\ManyToOne(inversedBy: 'detail' , cascade: ['persist'])]
+    #[Groups(['detailcommande.create' , 'detailcommande.show' , 'detailcommande.list'])]
     private ?Commande $idCommande = null;
 
-    #[ORM\ManyToOne(inversedBy: 'detailCommande', cascade: ['persist'])]
-    #[Groups(['detailcommande.create', 'detailcommande.show', 'detailcommande.list'])]
+    #[ORM\ManyToOne(inversedBy: 'detailCommande' , cascade: ['persist'])]
+    #[Groups(['detailcommande.create' , 'detailcommande.show' , 'detailcommande.list'])]
     private ?Plat $idPlat = null;
 
     #[ORM\Column(type: 'string', enumType: DetailStatu::class)]
-    // Vous pouvez choisir d'exclure "status" de certains groupes afin d'utiliser getStatusValue() à la place.
-    #[Groups(['detailcommande.create'])]
+    #[Groups(['detailcommande.create' , 'detailcommande.show' , 'detailcommande.list'])]
     private ?DetailStatu $status = null;
 
     public function getId(): ?int
@@ -42,6 +41,7 @@ class DetailCommande
     public function setIdCommande(?Commande $idCommande): static
     {
         $this->idCommande = $idCommande;
+
         return $this;
     }
 
@@ -53,6 +53,7 @@ class DetailCommande
     public function setIdPlat(?Plat $idPlat): static
     {
         $this->idPlat = $idPlat;
+
         return $this;
     }
 
@@ -65,14 +66,5 @@ class DetailCommande
     {
         $this->status = $status;
         return $this;
-    }
-
-    /**
-     * Renvoie la valeur de l'enum status sous forme de chaîne.
-     */
-    #[Groups(['detailcommande.show', 'detailcommande.list'])]
-    public function getStatusValue(): ?string
-    {
-        return $this->status?->value;
     }
 }

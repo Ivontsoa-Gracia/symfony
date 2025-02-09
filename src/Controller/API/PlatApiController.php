@@ -24,6 +24,7 @@ class PlatApiController extends AbstractController
     #[Route("/api/plats", methods: ["POST"])]
     public function create(Request $request, EntityManagerInterface $em, SerializerInterface $serializer,FileUploadService $fileUploadService): JsonResponse
     {
+
         $plat = new Plat();
 
         $nomPlat = $request->request->get('nomPlat');
@@ -71,26 +72,18 @@ class PlatApiController extends AbstractController
     }
 
     #[Route("/api/plats", methods: ["GET"])]
-    public function getPlats(PlatRepository $platRepository): JsonResponse
-{
-    // Retrieve all plats from the database
-    $plats = $platRepository->findAll();
+    public function list(PlatRepository $repository, SerializerInterface $serializer): JsonResponse
+    {
+        $platlist = $repository->findAll();
 
-    // Serialize the plats array to match the expected response structure
-    $platsData = [];
-    foreach ($plats as $plat) {
-        $platsData[] = [
-            'id' => $plat->getId(),
-            'nomPlat' => $plat->getNomPlat(),
-            'prixUnitaire' => $plat->getPrixUnitaire(),
-            'tempsCuisson' => $plat->getTempsCuisson()->format('H:i:s'), // Adjust time format if needed
-            'image' => $plat->getImage(),
-        ];
+        if (empty($platlist)) {
+            return $this->json(['message' => 'Aucun plat trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($platlist, Response::HTTP_OK, [], [
+            'groups' => ['plats.list']
+        ]);
     }
-
-    return new JsonResponse($platsData);
-}
-
 
 
     #[Route("/api/plats/{id}", methods: ["PUT"])]

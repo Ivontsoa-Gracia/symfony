@@ -68,7 +68,6 @@ class DetailCommandeApiController extends AbstractController
     }
 
 
-    
     #[Route("/api/detailCommandeEdit/{id}", methods: ["PUT"])]
     public function edit(int $id,Request $request,DetailCommandeRepository $repository,EntityManagerInterface $em,SerializerInterface $serializer): JsonResponse 
     {
@@ -98,18 +97,21 @@ class DetailCommandeApiController extends AbstractController
         $detailCommandes = $repository->createQueryBuilder('dc')
             ->join('dc.idCommande', 'c')
             ->where('c.idclient = :idclient')
+            ->andWhere('dc.status != :status') 
             ->setParameter('idclient', $idClient)
+            ->setParameter('status', 'recuperer') 
             ->getQuery()
             ->getResult();
-
+    
         if (empty($detailCommandes)) {
             return $this->json(['message' => 'Aucune commande trouvée pour ce client'], Response::HTTP_NOT_FOUND);
         }
-
+    
         return $this->json($detailCommandes, Response::HTTP_OK, [], [
             'groups' => ['detailcommande.list']
         ]);
     }
+    
 
 
 }

@@ -32,7 +32,7 @@ class Stock
     private ?Ingredient $idIngredient = null;
 
     #[ORM\Column(type: 'string', enumType: StockStatu::class)]
-    #[Groups(['stock.create', 'stock.list', 'task.show','detailcommande.list'])]
+    #[Groups(['stock.create', 'stock.list', 'task.show'])]
     private ?StockStatu $status = null;
 
     public function __construct()
