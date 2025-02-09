@@ -33,7 +33,7 @@ class ClientApiController extends AbstractController
     #[Route("/api/clients", methods: ["POST"])]
     public function create(
         Request $request,
-        SerializerInterface $serializer,  // Assurez-vous que Symfony injecte le service SerializerInterface
+        SerializerInterface $serializer,  // Assurez-vous que le service est injecté ici
         ValidatorInterface $validator,
         UserPasswordHasherInterface $userPasswordHasher,
         EntityManagerInterface $em
@@ -63,8 +63,6 @@ class ClientApiController extends AbstractController
         return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
     
-
-
     #[Route("/api/clients/findByEmail", methods: "POST")]
     public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse
     {

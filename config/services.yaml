@@ -36,3 +36,11 @@ services:
         arguments:
             # Ajoutez ici les dépendances nécessaires pour JwtTokenManager
             $someDependency: '@some_service' # Remplacez 'some_service' par le service réel dont vous avez besoin
+
+    # Ajoutez explicitement le service SerializerInterface si nécessaire
+    Symfony\Component\Serializer\SerializerInterface: '@Symfony\Component\Serializer\Serializer'
+
+    # Vos autres services
+    App\Controller\API\ClientApiController:
+        arguments:
+            $serializer: '@Symfony\Component\Serializer\SerializerInterface'
