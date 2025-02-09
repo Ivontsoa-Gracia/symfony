@@ -26,6 +26,13 @@ services:
         arguments:
             - [ '@Symfony\Component\Serializer\Normalizer\ObjectNormalizer' ]
 
+    # Explicit service definition for ClientApiController
+    App\Controller\API\ClientApiController:
+        arguments:
+            $jwtTokenManager: '@App\Service\JwtTokenManager'
 
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+    # Service definition for JwtTokenManager
+    App\Service\JwtTokenManager:
+        arguments:
+            # Ajoutez ici les dépendances nécessaires pour JwtTokenManager
+            $someDependency: '@some_service' # Remplacez 'some_service' par le service réel dont vous avez besoin
