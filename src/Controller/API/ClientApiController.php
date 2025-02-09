@@ -16,70 +16,48 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\DependencyInjection\Attribute\Required;
+use Symfony\Component\Routing\Requirement\Requirement;
+
 
 class ClientApiController extends AbstractController
 {
     private $jwtTokenManager;
-    private $serializer;
-    private $validator;
-    private $userPasswordHasher;
-    private $em;
 
-    // Le constructeur avec injection des dépendances
-    public function __construct(
-        JwtTokenManager $jwtTokenManager,
-        SerializerInterface $serializer,
-        ValidatorInterface $validator,
-        UserPasswordHasherInterface $userPasswordHasher,
-        EntityManagerInterface $em
-    ) {
+    public function __construct(JwtTokenManager $jwtTokenManager)
+    {
         $this->jwtTokenManager = $jwtTokenManager;
-        $this->serializer = $serializer;
-        $this->validator = $validator;
-        $this->userPasswordHasher = $userPasswordHasher;
-        $this->em = $em;
     }
 
     #[Route("/api/clients", methods: ["POST"])]
-    public function create(
-        Request $request,
-        SerializerInterface $serializer = null,  // rendre l'argument nullable
-        ValidatorInterface $validator,
-        UserPasswordHasherInterface $userPasswordHasher,
-        EntityManagerInterface $em
-    ): JsonResponse {
-        if (!$serializer) {
-            // Si le serializer n'est pas injecté, lancer une exception explicite
-            throw new RuntimeException('Le service SerializerInterface n\'a pas pu être injecté.');
-        }
-    
+    // #[TokenRequired]
+    public function create(Request $request, SerializerInterface $serializer, ValidatorInterface $validator, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $em): JsonResponse 
+    {
         // Décoder la requête JSON en objet Client
         $client = $serializer->deserialize($request->getContent(), Client::class, 'json');
-    
+
         // Valider l'entité
         $errors = $validator->validate($client);
         if (count($errors) > 0) {
             return new JsonResponse(['error' => (string) $errors], 400);
         }
-    
+
         // Vérifier que le mot de passe est présent
         if (!$client->getPassword()) {
             return new JsonResponse(['error' => 'Mot de passe requis'], 400);
         }
-    
+
         // Hacher le mot de passe
         $client->setPassword($userPasswordHasher->hashPassword($client, $client->getPassword()));
-    
+
         // Sauvegarder en base de données
         $em->persist($client);
         $em->flush();
-    
+
         // Retourner la réponse
         return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
-    
-    
+
+
     #[Route("/api/clients/findByEmail", methods: "POST")]
     public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse
     {
@@ -179,5 +157,3 @@ class ClientApiController extends AbstractController
         return new JsonResponse(['token' => $client->getApiToken()]);
     }
 }
-
-?>
