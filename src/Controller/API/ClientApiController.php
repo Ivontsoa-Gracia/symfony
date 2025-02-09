@@ -4,6 +4,7 @@ namespace App\Controller\API;
 
 use App\Entity\Client;
 use App\Repository\ClientRepository;
+use App\Service\JwtTokenManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,9 +21,15 @@ use Symfony\Component\Routing\Requirement\Requirement;
 
 class ClientApiController extends AbstractController
 {
+    private $jwtTokenManager;
+
+    public function __construct(JwtTokenManager $jwtTokenManager)
+    {
+        $this->jwtTokenManager = $jwtTokenManager;
+    }
 
     #[Route("/api/clients", methods: ["POST"])]
-    #[TokenRequired]
+    // #[TokenRequired]
     public function create(Request $request, SerializerInterface $serializer, ValidatorInterface $validator, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $em): JsonResponse 
     {
         // Décoder la requête JSON en objet Client
@@ -50,15 +57,36 @@ class ClientApiController extends AbstractController
         return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
 
+
+    #[Route("/api/clients/findByEmail", methods: "POST")]
+    public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+
+        // Appel à la méthode du ClientRepository pour trouver le client par email
+        $clients = $clientRepository->findByExampleField($email);
+
+        // Vérification si le client existe
+        if (empty($clients)) {
+            return new JsonResponse(['message' => 'Client non trouvé'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Supposons que le premier résultat est le client recherché
+        $client = $clients[0];
+
+        return new JsonResponse(['id' => $client->getId()], Response::HTTP_OK);
+    }
+
+
     #[Route("/api/clients/{id}", methods: "GET", requirements: ['id' => Requirement::DIGITS])]
-    #[TokenRequired]
+    // #[TokenRequired]
     public function findById(Client $client)
     {
         return $this->json($client, 200, [], [
             'groups' => ['client.show']
         ]);
     }
-
 
     #[Route("/api/clients/{id}", methods: "PUT")]
     #[TokenRequired]
@@ -104,26 +132,28 @@ class ClientApiController extends AbstractController
         return new Response(null, 204);
     }
 
-
-    #[Route("/api/clients/find-by-email", methods: "POST")]
-    public function findClientByEmail(Request $request, ClientRepository $clientRepository): JsonResponse
+    #[Route("/api/clients/login", methods: "POST")]
+    public function login(Request $request, ClientRepository $repository,  UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $em)
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? '';
+        $password = $data['password'] ?? '';
 
-        // Appel à la méthode du ClientRepository pour trouver le client par email
-        $clients = $clientRepository->findByExampleField($email);
-
-        // Vérification si le client existe
-        if (empty($clients)) {
-            return new JsonResponse(['message' => 'Client non trouvé'], Response::HTTP_NOT_FOUND);
+        $client = $repository->findOneBy(['email' => $email]);
+        if (!$client || !$userPasswordHasher->isPasswordValid($client, $password)) {
+            return new JsonResponse(['message' => 'Invalid credentials'], Response::HTTP_UNAUTHORIZED);
         }
 
-        // Supposons que le premier résultat est le client recherché
-        $client = $clients[0];
+        $claims = [
+            'clientId' => $client->getId(),
+        ];
+        $token = $this->jwtTokenManager->createToken($claims, 3600);
 
-        return new JsonResponse(['id' => $client->getId()], Response::HTTP_OK);
+        // Generate token and update database
+        $client->setApiToken($token->toString());
+        $em->persist($client);
+        $em->flush();
+
+        return new JsonResponse(['token' => $client->getApiToken()]);
     }
-
-
 }
