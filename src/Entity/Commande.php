@@ -16,23 +16,23 @@ class Commande
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['commande.create','commande.info', 'detailcommande.list'])]
+    #[Groups(['commande.create' ,'detailcommande.list'])]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'commandeRelat')]
-    #[Groups(['commande.create','commande.info', 'detailcommande.list'])]
+    
+    #[ORM\ManyToOne(inversedBy: 'commandeRelat', cascade: ['persist'])]
+    #[Groups(['commande.create' , 'commande.show' , 'commande.list' ,'commande.update' , 'commande.delete' , 'detailcommande.list'])]
     private ?Client $idclient = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
-    #[Groups(['commande.create','commande.info', 'detailcommande.list'])]
+    #[Groups(['commande.create' , 'commande.show' , 'commande.list' ,'commande.update' , 'commande.delete' , 'detailcommande.list'])]
     private ?\DateTimeInterface $dateCommande = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups(['commande.create','commande.info', 'detailcommande.list'])]
+    #[Groups(['commande.create' , 'commande.show' , 'commande.list' ,'commande.update' , 'commande.delete' , ])]
     private ?string $montantTotal = null;
 
     #[ORM\Column(type: 'string', enumType: StatuCommande::class)]
-    #[Groups(['commande.create','commande.info','commande.update', 'detailcommande.list'])]
+    #[Groups(['commande.create' , 'commande.show' , 'commande.list' ,'commande.update' , 'commande.delete'])]
     private ?StatuCommande $status = null;
 
     /**
@@ -40,8 +40,6 @@ class Commande
      */
     #[ORM\OneToMany(targetEntity: DetailCommande::class, mappedBy: 'idCommande')]
     private Collection $detail;
-
-    
 
     public function __construct()
     {
@@ -76,6 +74,16 @@ class Commande
         return $this;
     }
 
+    public function getMontantTotal(): ?string
+    {
+        return $this->montantTotal;
+    }
+
+    public function setMontantTotal(string $montantTotal): static
+    {
+        $this->montantTotal = $montantTotal;
+        return $this;
+    }
 
     public function getStatus(): ?StatuCommande
     {
@@ -114,18 +122,6 @@ class Commande
                 $detail->setIdCommande(null);
             }
         }
-
-        return $this;
-    }
-
-    public function getMontantTotal(): ?string
-    {
-        return $this->montantTotal;
-    }
-
-    public function setMontantTotal(string $montantTotal): static
-    {
-        $this->montantTotal = $montantTotal;
 
         return $this;
     }
