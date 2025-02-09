@@ -17,6 +17,7 @@ class JwtTokenManager
 
     public function __construct(string $secretKey)
     {
+        // Configuration du JWT avec la clé secrète
         $this->config = Configuration::forSymmetricSigner(
             new Sha256(),
             InMemory::plainText($secretKey)
@@ -32,10 +33,12 @@ class JwtTokenManager
             ->issuedAt($now) // date d'émission
             ->expiresAt($now->modify("+$expirationInSeconds seconds")); // date d'expiration
 
+        // Ajout des revendications (claims)
         foreach ($claims as $key => $value) {
             $builder->withClaim($key, $value);
         }
 
+        // Retourne le token signé
         return $builder->getToken($this->config->signer(), $this->config->signingKey());
     }
 
@@ -43,11 +46,13 @@ class JwtTokenManager
     {
         $clock = new SystemClock(new \DateTimeZone('UTC'));
 
+        // Contraintes de validation
         $constraints = [
             new SignedWith($this->config->signer(), $this->config->signingKey()),
             new ValidAt($clock)
         ];
 
+        // Validation du token
         return $this->config->validator()->validate($token, ...$constraints);
     }
 
@@ -56,17 +61,19 @@ class JwtTokenManager
         try {
             return $this->config->parser()->parse($tokenString);
         } catch (\Throwable $e) {
-            return null;
+            return null; // Token invalide ou erreur de parsing
         }
     }
 
-    // Method to extract token from the Authorization header
+    // Extraction du token depuis le header Authorization
     public function extractTokenFromRequest(Request $request): ?string
     {
         $authHeader = $request->headers->get('Authorization');
         if ($authHeader && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-            return $matches[1];
+            return $matches[1]; // Retourne le token sans 'Bearer'
         }
-        return null;
+        return null; // Retourne null si le token est absent ou mal formaté
     }
 }
+
+?>
