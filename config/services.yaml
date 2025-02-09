@@ -29,6 +29,7 @@ services:
     # Service definition for ClientApiController
     App\Controller\API\ClientApiController:
         arguments:
+            $jwtTokenManager: '@App\Service\JwtTokenManager'
             $serializer: '@Symfony\Component\Serializer\SerializerInterface'
             $validator: '@Symfony\Component\Validator\Validator\ValidatorInterface'
             $userPasswordHasher: '@Symfony\Component\Security\Core\Encoder\UserPasswordHasherInterface'
