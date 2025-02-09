@@ -31,33 +31,38 @@ class ClientApiController extends AbstractController
     }
 
     #[Route("/api/clients", methods: ["POST"])]
-    // #[TokenRequired]
-    public function create(Request $request, SerializerInterface $serializer, ValidatorInterface $validator, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $em): JsonResponse 
-    {
+    public function create(
+        Request $request,
+        SerializerInterface $serializer,  // Assurez-vous que Symfony injecte le service SerializerInterface
+        ValidatorInterface $validator,
+        UserPasswordHasherInterface $userPasswordHasher,
+        EntityManagerInterface $em
+    ): JsonResponse {
         // Décoder la requête JSON en objet Client
         $client = $serializer->deserialize($request->getContent(), Client::class, 'json');
-
+    
         // Valider l'entité
         $errors = $validator->validate($client);
         if (count($errors) > 0) {
             return new JsonResponse(['error' => (string) $errors], 400);
         }
-
+    
         // Vérifier que le mot de passe est présent
         if (!$client->getPassword()) {
             return new JsonResponse(['error' => 'Mot de passe requis'], 400);
         }
-
+    
         // Hacher le mot de passe
         $client->setPassword($userPasswordHasher->hashPassword($client, $client->getPassword()));
-
+    
         // Sauvegarder en base de données
         $em->persist($client);
         $em->flush();
-
+    
         // Retourner la réponse
         return $this->json($client, 201, [], ['groups' => ['client.show']]);
     }
+    
 
 
     #[Route("/api/clients/findByEmail", methods: "POST")]
